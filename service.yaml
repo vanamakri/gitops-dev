@@ -8,6 +8,6 @@ spec:
     app: nginx
   ports:
     - protocol: TCP
-      port: 8080       # Service listens on port 8080
+      port: 80       # Service listens on port 8080
       targetPort: 80   # Forward traffic to container's port 80
   type: NodePort  # Change to LoadBalancer if needed
