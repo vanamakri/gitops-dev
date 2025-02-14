@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: kvanama/k8s-nginx-html:latest
+          image: kvanama5/k8s-nginx-html:latest
           ports:
             - containerPort: 80
           resources:
