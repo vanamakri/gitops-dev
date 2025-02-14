@@ -29,9 +29,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      #- name: Push Docker Image
-        #run: |
-          #sudo docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
+      - name: Push Docker Image
+        run: |
+          sudo docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
