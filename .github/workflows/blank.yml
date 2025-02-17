@@ -55,7 +55,7 @@ jobs:
       - name: Remove Docker Image
         run: |
           
-          docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
+          sudo docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:latest
 
       - name: Docker logout
         run: | 
