@@ -36,26 +36,26 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
 
-      #- name: Remove Namespace & Resources if exists
-        #run: |
-          #kubectl delete -f deployment.yaml -n nginx-k8s
-          #kubectl delete -f service.yaml -n nginx-k8s
-          #kubectl delete namespace nginx-k8s
-          #sleep 30 
-
-      - name: Deploy to Kubernetes
+      - name: Remove Namespace & Resources if exists
         run: |
-          kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f deployment.yaml -n nginx-k8s
-          kubectl apply -f service.yaml -n nginx-k8s
+          kubectl delete -f deployment.yaml -n nginx-k8s
+          kubectl delete -f service.yaml -n nginx-k8s
+          kubectl delete namespace nginx-k8s
+          sleep 30 
+
+      #- name: Deploy to Kubernetes
+        #run: |
+          #kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
+          #kubectl apply -f deployment.yaml -n nginx-k8s
+          #kubectl apply -f service.yaml -n nginx-k8s
 
       - name: Verify Deployment
         run: kubectl get pods -n nginx-k8s && kubectl get svc -n nginx-k8s
 
-      #- name: Remove Docker Image
-        #run: |
+      - name: Remove Docker Image
+        run: |
           
-          #docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
+          docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
 
       - name: Docker logout
         run: | 
