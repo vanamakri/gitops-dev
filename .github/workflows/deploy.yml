@@ -17,7 +17,7 @@ jobs:
         run: |
           cd src
           ls 
-          MESSAGE=${{ secrets.MESSAGE }}
+          MESSAGE="${{ secrets.MESSAGE }}"
           sed -i "s|MESSAGE_PLACEHOLDER|${MESSAGE}|g" index.html
           cat index.html
 
