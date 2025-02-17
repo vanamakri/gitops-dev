@@ -1,6 +1,5 @@
 name: Build
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches: [ "main" ]
   pull_request:
@@ -8,21 +7,23 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: k8s
+    runs-on: master
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Inject Environment Variable
+        run: |
+          cd src/
+          MESSAGE=${{ secrets.MESSAGE }}
+          sed -i "s/MESSAGE_PLACEHOLDER/$MESSAGE/g" index.html
+          cat index.html
 
-      - name: Docker logout
-        run: | 
-          docker logout
-          
       - name: Build Docker Image
         run: |
-          sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:latest .
-          
+          sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1 .
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -31,32 +32,33 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          sudo docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
 
       - name: Remove Namespace & Resources if exists
         run: |
+          cd k8s/ 
           kubectl delete -f deployment.yaml -n nginx-k8s
           kubectl delete -f service.yaml -n nginx-k8s
           kubectl delete namespace nginx-k8s
           sleep 30 
 
-      #- name: Deploy to Kubernetes
-        #run: |
-          #kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
-          #kubectl apply -f deployment.yaml -n nginx-k8s
-          #kubectl apply -f service.yaml -n nginx-k8s
+      - name: Deploy to Kubernetes
+        run: |
+          cd k8s/
+          kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f deployment.yaml -n nginx-k8s --record
+          kubectl apply -f service.yaml -n nginx-k8s
 
       - name: Verify Deployment
         run: kubectl get pods -n nginx-k8s && kubectl get svc -n nginx-k8s
 
       - name: Remove Docker Image
         run: |
-          
-          sudo docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:latest
+          docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:1
 
       - name: Docker logout
         run: | 
-          docker logout 
+          docker logout
