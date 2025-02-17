@@ -16,8 +16,9 @@ jobs:
       - name: Inject Environment Variable
         run: |
           cd src/
-          MESSAGE=${{ secrets.MESSAGE }}
-          sed -i "s/MESSAGE_PLACEHOLDER/$MESSAGE/g" index.html
+          ls 
+          #MESSAGE=${{ secrets.MESSAGE }}
+          #sed -i "s/MESSAGE_PLACEHOLDER/$MESSAGE/g" index.html
           cat index.html
 
       - name: Build Docker Image
