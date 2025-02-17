@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: master
+    runs-on: k8s
 
     steps:
       - name: Checkout Repository
