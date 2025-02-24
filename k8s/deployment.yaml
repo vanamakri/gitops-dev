@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: kvanama5/k8s-nginx-html:v2
+          image: kvanama5/k8s-nginx-html:v3
           imagePullPolicy: Always
           ports:
             - containerPort: 80
