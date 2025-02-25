@@ -33,7 +33,7 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          sudo docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v4
+          docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v4
 
       #- name: Set up kubectl
         #uses: azure/setup-kubectl@v3
