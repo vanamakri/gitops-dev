@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: k8s
+    runs-on: arc
 
     steps:
       - name: Checkout Repository
