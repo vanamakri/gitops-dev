@@ -65,10 +65,12 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl    
       - name: Setup kube-config
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
       - name: listing the files
         run: |
-          ls -R -altr    
+          #ls -R -altr  
+          kubectl get pods -A  
 
       #- name: Remove Namespace & Resources if exists
         #run: |
