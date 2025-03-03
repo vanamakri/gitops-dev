@@ -40,26 +40,31 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v5
 
+  deploy:
+    runs-on: arc
+    needs: build-and-push          
+
+    steps:    
       #- name: Set up kubectl
         #uses: azure/setup-kubectl@v3
 
-      #- name: Remove Namespace & Resources if exists
-        #run: |
-          #cd k8s 
-          #kubectl delete -f deployment.yaml -n nginx-k8s
-          #kubectl delete -f service.yaml -n nginx-k8s
-          #kubectl delete namespace nginx-k8s
-          #sleep 30 
+      - name: Remove Namespace & Resources if exists
+        run: |
+          cd k8s 
+          kubectl delete -f deployment.yaml -n nginx-k8s
+          kubectl delete -f service.yaml -n nginx-k8s
+          kubectl delete namespace nginx-k8s
+          sleep 30 
 
-      #- name: Deploy to Kubernetes
-        #run: |
-          #cd k8s
-          #kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
-          #kubectl apply -f deployment.yaml -n nginx-k8s --record
-          #kubectl apply -f service.yaml -n nginx-k8s
+      - name: Deploy to Kubernetes
+        run: |
+          cd k8s
+          kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f deployment.yaml -n nginx-k8s --record
+          kubectl apply -f service.yaml -n nginx-k8s
 
-      #- name: Verify Deployment
-        #run: kubectl get pods -n nginx-k8s && kubectl get svc -n nginx-k8s
+      - name: Verify Deployment
+        run: kubectl get pods -n nginx-k8s && kubectl get svc -n nginx-k8s
 
       - name: Remove Docker Image
         run: |
