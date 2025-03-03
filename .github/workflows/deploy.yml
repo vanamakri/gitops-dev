@@ -63,7 +63,11 @@ jobs:
           curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl    
-
+      - name: Setup kube-config
+        run: |
+          echo $"{secrets.KUBECONFIG}" > kubeconfig
+          chmod 755 kubeconfig 
+          export KUBECONFIG=kubeconfig
       - name: listing the files
         run: |
           ls -R -altr    
