@@ -65,9 +65,7 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl    
       - name: Setup kube-config
         run: |
-          echo $"{secrets.KUBECONFIG}" > kubeconfig
-          chmod 755 kubeconfig 
-          export KUBECONFIG=kubeconfig
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
       - name: listing the files
         run: |
           ls -R -altr    
