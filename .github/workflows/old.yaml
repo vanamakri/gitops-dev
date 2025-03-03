@@ -36,7 +36,7 @@ jobs:
 
       - name: Inject Environment Variable
         run: |
-          cd k8s/
+          cd src/
           MESSAGE=${{ secrets.MESSAGE }}
           sed -i "s/MESSAGE_PLACEHOLDER/$MESSAGE/g" index.html
           cat index.html 
