@@ -49,7 +49,16 @@ jobs:
         uses: actions/checkout@v3  
       #- name: Set up kubectl
         #uses: azure/setup-kubectl@v3
-
+      - name: Installing kubelet
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y apt-transport-https ca-certificates curl
+          curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          sudo bash -c 'cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
+          deb https://apt.kubernetes.io/ kubernetes-xenial main
+          EOF' 
+          sudo apt-get update -y
+          sudo apt-get install -y kubectl    
 
       - name: listing the files
         run: |
