@@ -39,6 +39,7 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v5
+        needs: login to docker hub  
 
   deploy:
     runs-on: arc
