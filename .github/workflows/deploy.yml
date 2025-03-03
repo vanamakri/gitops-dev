@@ -48,6 +48,11 @@ jobs:
       #- name: Set up kubectl
         #uses: azure/setup-kubectl@v3
 
+
+      - name: listing the files
+        run: |
+          ls -R -altr    
+
       - name: Remove Namespace & Resources if exists
         run: |
           ls
