@@ -1,0 +1,75 @@
+name: Build
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'k8s/**'
+      - 'VERSION'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'k8s/**'
+      - 'VERSION'
+
+jobs:
+  bump-version-and-deploy:
+    runs-on: arc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GIT_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Retrieve and Increment Version
+        id: version
+        run: |
+          VERSION_FILE="VERSION"
+          if [ ! -f "$VERSION_FILE" ]; then echo "1.0.0" > "$VERSION_FILE"; fi
+          VERSION=$(cat "$VERSION_FILE")
+          NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$NF += 1 ; print}')
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "$NEW_VERSION" > "$VERSION_FILE"
+
+      - name: Inject Environment Variable
+        run: |
+          cd k8s/
+          MESSAGE=${{ secrets.MESSAGE }}
+          sed -i "s/MESSAGE_PLACEHOLDER/$MESSAGE/g" index.html
+          cat index.html 
+
+      - name: Update deployment.yaml with new version
+        run: |
+          pwd
+          sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:.*|image: ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:$NEW_VERSION|" k8s/deployment.yaml
+
+      - name: Commit and push updated files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add VERSION k8s/deployment.yaml
+          git commit -m "Bump image version to $NEW_VERSION and update deployment.yaml"
+          git push
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:$NEW_VERSION .
+          docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:$NEW_VERSION
+
+      - name: Remove Docker Image
+        run: |
+          docker image rm -f nginx:latest
+          docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:$NEW_VERSION
+
+      - name: Docker logout
+        run: | 
+          docker logout        
