@@ -40,56 +40,56 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v6 
 
-  deploy:
-    runs-on: arc
-    needs: build-and-push          
+  #deploy:
+    #runs-on: arc
+    #needs: build-and-push          
 
-    steps:  
-      - name: Checkout Repository
-        uses: actions/checkout@v3  
+    #steps:  
+      #- name: Checkout Repository
+        #uses: actions/checkout@v3  
     
-      - name: Installing kubectl
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y curl wget apt-transport-https
-          curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl    
+      #- name: Installing kubectl
+        #run: |
+          #sudo apt-get update -y
+          #sudo apt-get install -y curl wget apt-transport-https
+          #curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+          #chmod +x ./kubectl
+          #sudo mv ./kubectl /usr/local/bin/kubectl    
 
-      - name: Setup kube-config
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+      #- name: Setup kube-config
+        #run: |
+          #mkdir -p $HOME/.kube
+          #echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
 
       #- name: listing the files
         #run: |
           #ls -R -altr  
           #kubectl get pods -A  
 
-      - name: Remove Namespace & Resources if exists
-        run: |
+      #- name: Remove Namespace & Resources if exists
+        #run: |
           #ls
-          cd k8s
-          kubectl delete -f deployment.yaml -n nginx-k8s
-          kubectl delete -f service.yaml -n nginx-k8s
-          kubectl delete namespace nginx-k8s
+          #cd k8s
+          #kubectl delete -f deployment.yaml -n nginx-k8s
+          #kubectl delete -f service.yaml -n nginx-k8s
+          #kubectl delete namespace nginx-k8s
           #sleep 30 
 
-      - name: Deploy to Kubernetes
-        run: |
-          cd k8s
+      #- name: Deploy to Kubernetes
+        #run: |
+          #cd k8s
           #kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create namespace nginx-k8s
-          kubectl apply -f deployment.yaml -n nginx-k8s 
-          kubectl apply -f service.yaml -n nginx-k8s
+          #kubectl create namespace nginx-k8s
+          #kubectl apply -f deployment.yaml -n nginx-k8s 
+          #kubectl apply -f service.yaml -n nginx-k8s
 
-      - name: Verify Deployment
-        run: kubectl get pods -n nginx-k8s && kubectl get svc -n nginx-k8s
+      #- name: Verify Deployment
+        #run: kubectl get pods -n nginx-k8s && kubectl get svc -n nginx-k8s
 
-      - name: Remove Docker Image
-        run: |
-          sudo docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v5
+      #- name: Remove Docker Image
+        #run: |
+          #sudo docker image rm -f ${{ secrets.DOCKER_USERNAME }}/k8s-nginx-html:v5
 
-      - name: Docker logout
-        run: | 
-          docker logout
+      #- name: Docker logout
+        #run: | 
+          #docker logout
