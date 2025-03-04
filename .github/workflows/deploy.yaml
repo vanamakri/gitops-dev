@@ -78,7 +78,7 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           cd k8s
-          kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
+          #kubectl create namespace nginx-k8s --dry-run=client -o yaml | kubectl apply -f -
           kubectl create namespace nginx-k8s
           kubectl apply -f deployment.yaml -n nginx-k8s 
           kubectl apply -f service.yaml -n nginx-k8s
