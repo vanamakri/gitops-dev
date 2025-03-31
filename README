@@ -1,0 +1,395 @@
+FMS - Steps to Automate XF Deployment Environment [WiP] 
+
+1. Prerequisites 
+
+a. Infrastructure Setup Automation 
+
+i. Automate Network and Subnet Creation 
+
+Use Terraform/Ansible to create networks and subnets: 
+
+Private Network: xf-network-private 
+
+Public Network: xf-network-public 
+
+Private Subnet: xf-network-subnet-private 
+
+Public Subnet: xf-network-subnet-public 
+
+Configure gateway and security groups automatically 
+
+b. Automate Credential Creation 
+
+Generate application credentials using API calls or automation scripts. 
+
+Store credentials securely in a vault for later retrieval. 
+
+c. Automate Security Group Configuration 
+
+Use IaC to define security group rules: 
+
+Allow TCP, ICMP, and UDP traffic as per requirements. 
+
+Apply to both private and public networks. 
+
+ 
+
+2. Cluster Provisioning Automation 
+
+a. Automate Cluster Creation 
+
+Implement a script or Terraform module to: 
+
+Create Control Plane (CP) and Data Plane (DP) clusters. 
+
+Use the naming convention: 
+
+CP: xf-<env>-k8s-controlplane 
+
+DP: xf-<env>-k8s-dataplane-01 
+
+Set User POD and Service Address Blocks to default. 
+
+Define domain and Kubernetes version dynamically. 
+
+b. Automate External Address Configuration 
+
+Set API Access and External API Addresses dynamically based on environment (Dev/Prod). 
+
+Use automation to define Ingress Addresses. 
+
+c. Automate Networking Setup 
+
+Assign subnets based on environment: 
+
+Dev: xf-network-subnet-private 
+
+Prod: xf-network 
+
+Ensure security groups are correctly associated. 
+
+d. Automate Node Configuration 
+
+Define instance specifications for CP and DP clusters: 
+
+CP Dev: Controller - p4m8, Worker - p6m8 
+
+DP Dev: Controller - p6m8, Worker - p32m64 
+
+CP Prod: Controller - p4m16, Worker - p16m32 
+
+DP Prod: Controller - p8m32, Worker - p32m64 
+
+e. Automate Authentication Setup 
+
+Retrieve stored credentials and apply them to the cluster automatically. 
+
+f. Automate Cluster Creation and Verification 
+
+Execute cluster creation via script or Terraform. 
+
+Monitor creation process (~4-5 minutes) and validate status. 
+
+Verify the cluster status is set to "active" before proceeding. 
+
+ 
+
+3. Node Scaling Automation 
+
+a. Automate Node Group Management (Dev & Prod) 
+
+i. Dev Setup 
+
+Add a new group node: 
+
+Name: fqrdp-k8s-ng 
+
+Size: 
+
+Min: 2 
+
+Desired: 9 
+
+Max: 10 
+
+Spec: p16m32 
+
+Networking: xf-network-subnet-private 
+
+Security Group: default 
+
+Submit and wait for completion. 
+
+ii. Prod Setup 
+
+Update CP cluster: 
+
+Controller Min/Desired/Max: 3 
+
+Worker Min/Desired/Max: 2 
+
+Update DP cluster: 
+
+Controller Min/Desired/Max: 3 
+
+Add Node Group: 
+
+Name: ng-01-<env>-<cp/dp> 
+
+Ensure VM naming constraints (<63 chars) 
+
+Min/Desired/Max: 5 
+
+Spec: p16m32 
+
+Subnet: xf-network 
+
+Security Group: default 
+
+Submit and wait for completion. 
+
+ 
+
+4. Execution & Monitoring 
+
+Use CI/CD pipelines (GitHub Actions, Jenkins, or GitLab CI) to execute automation. 
+
+Implement logging and monitoring for cluster creation and node scaling. 
+
+Validate configurations using automated checks before marking the deployment complete. 
+
+ 
+
+ 
+
+5. Provision Rocky Linux 9 VM Image (Skip if already done) 
+
+Note: This image will be used to provision FSR VM Template and the Jumphost. 
+
+Steps: 
+
+Navigate to Home page -> Image -> Image. 
+
+Image Name: rockylinux9. 
+
+Visibility: Private. 
+
+Source: Download. 
+
+File URL: https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud.latest.x86_64.qcow2 
+
+Skip TLS Verify: Skip. 
+
+Image Format: Qcow2. 
+
+Submit. 
+
+Wait for ~5 minutes for the image creation to finish. 
+
+6. Jumphost Provisioning 
+
+a. Create Instance 
+
+Home page -> Compute -> Instance 
+
+Create new instance: 
+
+Name: xf-<env>-jumphost 
+
+Availability Zone: Nova 
+
+Boot Volume: 
+
+Source: Image 
+
+Volume Size: Default 
+
+Image Source: rockylinux9 
+
+Spec: p8m16 
+
+Network: 
+
+Dev Setup: xf-network-private 
+
+Prod Setup: xf-network 
+
+Security Groups: Default 
+
+Key Pair: Default 
+
+Configuration Script: Retrieve from GitLab 
+
+Submit 
+
+Note down the Fixed IP and name of this instance. 
+
+Generate and assign Floating IP: 
+
+Home page -> Network -> Floating IP 
+
+Create new Floating IP, select pool: 
+
+Dev Setup: external-corp 
+
+Prod Setup: fsoar-ext 
+
+Associate Floating IP with Fixed IP. 
+
+b. Generate Public SSH Key 
+
+ssh root@<floating IP> 
+
+ssh-keygen -t rsa 
+
+cat /root/.ssh/id_rsa.pub and save the key. 
+
+7. Database and Message Queue Provisioning 
+
+a. PostgreSQL Clusters 
+
+Create CP and DP clusters with defined specifications. 
+
+Assign public key for SSH access. 
+
+b. RabbitMQ Clusters 
+
+Create clusters for CP, DP, and Agent. 
+
+Assign Floating IP to the primary node. 
+
+c. Redis Clusters 
+
+Create single-node and three-node clusters for CP and DP. 
+
+Assign Floating IP to primary nodes. 
+
+ 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 
+
+ 
+
+XF Deployment Automation Plan 
+
+1. Tools for Automation 
+
+To automate the XF deployment environment, the following tools can be used: 
+
+Infrastructure as Code (IaC): Terraform, Ansible 
+
+Configuration Management: Ansible, SaltStack 
+
+CI/CD Pipelines: GitLab CI/CD, Jenkins, GitHub Actions 
+
+Monitoring & Logging: Prometheus, Grafana, ELK Stack 
+
+Security & Secrets Management: HashiCorp Vault, AWS Secrets Manager 
+
+Orchestration: Kubernetes, Helm 
+
+2. Infrastructure Setup Automation 
+
+a. Automate Network and Subnet Creation 
+
+Write Terraform scripts to define VPCs, subnets, gateways, and security groups. 
+
+Define CIDR blocks and route tables dynamically based on the environment. 
+
+b. Automate Credential Management 
+
+Use HashiCorp Vault or AWS Secrets Manager to store and retrieve credentials securely. 
+
+Automate provisioning of IAM roles and access policies. 
+
+c. Automate Security Group Configuration 
+
+Use Ansible to configure firewall rules dynamically. 
+
+Apply predefined security group policies to private and public networks. 
+
+3. Cluster Provisioning Automation 
+
+a. Automate Kubernetes Cluster Deployment 
+
+Use Terraform modules to create Kubernetes clusters. 
+
+Automate cluster version selection and domain configuration. 
+
+b. Automate External Address Configuration 
+
+Use scripts to dynamically configure API Access and Ingress Addresses. 
+
+c. Automate Node Configuration 
+
+Define instance specifications in Terraform for different environments. 
+
+Use Ansible to install required packages and dependencies on nodes. 
+
+d. Automate Authentication Setup 
+
+Retrieve stored credentials from Vault and apply them to Kubernetes clusters automatically. 
+
+e. Automate Cluster Creation and Verification 
+
+Implement GitLab CI/CD or Jenkins pipelines to execute Terraform scripts. 
+
+Automate health checks and validation of active cluster status. 
+
+4. Node Scaling Automation 
+
+a. Automate Node Group Management 
+
+Define auto-scaling policies in Kubernetes and Terraform. 
+
+Automate worker node addition and removal based on workload. 
+
+b. Automate Monitoring and Alerts 
+
+Deploy Prometheus and Grafana for real-time cluster monitoring. 
+
+Use ELK stack for log aggregation and anomaly detection. 
+
+5. Jumphost Provisioning Automation 
+
+a. Automate VM Provisioning 
+
+Use Terraform to create Rocky Linux 9 VM instances. 
+
+Configure Floating IP assignments dynamically. 
+
+b. Automate SSH Key Generation 
+
+Use a script to generate and assign SSH keys. 
+
+Store public keys in Vault for secure retrieval. 
+
+6. Database & Message Queue Automation 
+
+a. Automate PostgreSQL, RabbitMQ, and Redis Provisioning 
+
+Use Terraform modules for creating and managing clusters. 
+
+Automate failover and backup mechanisms. 
+
+b. Automate Scaling and Failover 
+
+Use Kubernetes StatefulSets for database clustering. 
+
+Configure automated failover mechanisms with HAProxy or Keepalived. 
+
+7. Execution & Continuous Deployment 
+
+a. Implement CI/CD for Automation 
+
+Use GitHub Actions or GitLab CI/CD to trigger Terraform and Ansible playbooks. 
+
+Implement automated rollback mechanisms in case of failure. 
+
+b. Monitor and Validate Deployments 
+
+Automate post-deployment validation using scripts and monitoring dashboards. 
+
+Set up alerting mechanisms for failed deployments. 
+
+ 
